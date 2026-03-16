@@ -5,6 +5,8 @@ DxLibで制作した間違い探しゲーム
 C++
 DxLib
 Visual Studio
+DxLib公式サイトからダウンロードしてプロジェクトに設定してください。
+https://dxlib.xsrv.jp/dxdload.html
 
 機能
 タイトル画面
