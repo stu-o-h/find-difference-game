@@ -5,7 +5,7 @@
 #include "PlayScene.h"
 #include "ResultScene.h"
 #include "FadeManager.h"
-
+#include "Input.h"
 
 static TitleScene title;//タイトル
 static PlayScene  play;//プレイシーン
@@ -44,6 +44,11 @@ void Game::Update() {
 
     case SceneID::TITLE:
     {
+        if (prevScene != SceneID::TITLE)
+        {
+            title.Init();
+        }
+
         SceneID requestedScene = currentScene;
 
         title.Update(requestedScene);
@@ -55,16 +60,28 @@ void Game::Update() {
             isChangingScene = true;
         }
     }
-        break;
+    break;
     case SceneID::PLAY:
+    {
         if (prevScene != SceneID::PLAY)
+        {
+            play.Init();
+        }
 
-        play.Init();//「今フレームで初めてPLAYになった」なら初期化する。
-        
-        play.Update(currentScene);
-        
-        break;
+        SceneID requestedScene = currentScene;
+
+        play.Update(requestedScene);
+
+        if (requestedScene != currentScene && !isChangingScene)
+        {
+            nextScene = requestedScene;
+            fade.StartFadeOut();
+            isChangingScene = true;
+        }
+    }
+    break;
     case SceneID::RESULT:
+    {
         if (prevScene != SceneID::RESULT)
         {
             result.Init(
@@ -74,11 +91,22 @@ void Game::Update() {
             );
         }
 
-        result.Update(currentScene);
-        break;
+        SceneID requestedScene = currentScene;
+
+        result.Update(requestedScene);
+
+        if (requestedScene != currentScene && !isChangingScene)
+        {
+            nextScene = requestedScene;
+            fade.StartFadeOut();
+            isChangingScene = true;
+        }
+    }
+    break;
     }
     
     prevScene = currentScene;//最後に現在シーンを保存
+    Input::Update();
 }
 
 //描画も同様に switch 分岐。

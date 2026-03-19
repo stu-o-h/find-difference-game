@@ -18,14 +18,14 @@ public:
     // 描画処理（毎フレーム呼ばれる）
     void Draw();
 private:
-	FadeManager fade; // フェード管理クラスのインスタンス
+    FadeManager fade{}; // フェード管理クラスのインスタンス
 	bool isChanging = false; // シーン遷移中かどうかのフラグ
 
-    int fontHandle;
-    int fontHandle2;
+    int fontHandle = 0;
+    int fontHandle2 = 0;
 
-    int tutorialPage;
-    bool showTutorial;
-    int width;
+    int tutorialPage = 0;
+    bool showTutorial = false;
+    int width = 0;
 };
 

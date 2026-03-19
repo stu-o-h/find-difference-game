@@ -49,6 +49,9 @@ bool IsOverlap(AnotherPoint a, AnotherPoint b)
 
 void PlayScene::Init()
 {
+   // printfDx("PlayScene Init\n");
+    
+
     correctCount = 0;
     clickCount = 0;
 
@@ -58,16 +61,18 @@ void PlayScene::Init()
     another.height = 40;
     another.isFound = false;
 
-	currentArea = 0;
-	totalAnotherCount = 3;
-	remainingCount = totalAnotherCount;
-	areaCount = 3;
+	currentArea = 0;        // 最初はエリア0から
+
+    areaCount = 3;
 
     for (int i = 0; i < areaCount; i++)
     {
         areaClear[i] = false;   // 最初は全部未クリア
     }
 
+    totalAnotherCount = 3;
+
+    remainingCount = totalAnotherCount;
 	showClick = false;
 
     font = CreateFontToHandle(NULL, 30, 3);// フォントサイズ30、太さ3のフォントを作成
@@ -85,39 +90,42 @@ void PlayScene::Init()
     PlaySoundMem(Resource::bgmPlay, DX_PLAYTYPE_LOOP);
     ChangeVolumeSoundMem(0, Resource::bgmPlay);
 
-    correctCount = 0;
-    clickCount = 0;
+    
 
-    // ★ステージごとの設定
+    // ステージごとの問題数
     if (Game::stage == 1)
-    {
         totalAnotherCount = 3;
-    }
     else if (Game::stage == 2)
-    {
         totalAnotherCount = 4;
-    }
-    else if (Game::stage == 3)
-    {
+    else
         totalAnotherCount = 5;
-    }
 
     remainingCount = totalAnotherCount;
 
-
-	CreateObjects();
+    CreateObjects();
 }
 
 void PlayScene::Update(SceneID& scene)
 {
-    
+    //printfDx("FadeOut %d\n", bgmFadeOut);
+
     CheckClick();
     gameTimer++;
 
-    if (areaClear[0] && areaClear[1] && areaClear[2])
+    bool allClear = true;
+
+    for (int i = 0; i < areaCount; i++)
     {
-        StopSoundMem(Resource::bgmPlay);  // ★追加
-        scene = SceneID::RESULT;
+        if (!areaClear[i])
+        {
+            allClear = false;
+            break;
+        }
+    }
+	// 全エリアクリアしたらリザルトへ
+    if (allClear)
+    {
+        StopSoundMem(Resource::bgmPlay);
         bgmFadeOut = true;
     }
 
@@ -129,7 +137,7 @@ void PlayScene::Update(SceneID& scene)
     {
         showMiss = false;
     }
-
+    
     // フェードイン
     if (bgmFadeIn)
     {
@@ -143,7 +151,7 @@ void PlayScene::Update(SceneID& scene)
 
         ChangeVolumeSoundMem(bgmVolume, Resource::bgmPlay);
     }
-	// フェードアウト
+    // フェードアウト
     if (bgmFadeOut)
     {
         bgmVolume -= 3;
@@ -152,7 +160,7 @@ void PlayScene::Update(SceneID& scene)
         {
             bgmVolume = 0;
             StopSoundMem(Resource::bgmPlay);
-            scene = SceneID::RESULT;
+            scene = SceneID::RESULT;   // ★必ずRESULT
         }
 
         ChangeVolumeSoundMem(bgmVolume, Resource::bgmPlay);
@@ -207,6 +215,7 @@ void PlayScene::CreateObjects()
                 count++;
             }
         }
+        areaAnotherCount[area] = count;   // ← ★これ追加
     }
 }
 
@@ -245,8 +254,15 @@ void PlayScene::CheckClick()
     {
         currentArea++;
         if (currentArea >= areaCount) currentArea = 0;
-        remainingCount = totalAnotherCount;
-        return; // ←ここ重要
+
+        // ★残りオブジェクトを再計算
+        remainingCount = 0;
+        for (int i = 0; i < 6; i++)
+        {
+            if (objs[currentArea][i].isAnother && !objs[currentArea][i].isFound)
+                remainingCount++;
+        }
+        return;
     }
 
     // ===== 左矢印 =====
@@ -255,13 +271,20 @@ void PlayScene::CheckClick()
     {
         currentArea--;
         if (currentArea < 0) currentArea = areaCount - 1;
-        remainingCount = totalAnotherCount;
-        return; // ←ここ重要
+
+        // ★残りオブジェクトを再計算
+        remainingCount = 0;
+        for (int i = 0; i < 6; i++)
+        {
+            if (objs[currentArea][i].isAnother && !objs[currentArea][i].isFound)
+                remainingCount++;
+        }
+        return;
     }
 
     bool hitObject = false;
 
-    for (int i = 0; i < OBJ_MAX; i++)
+    for (int i = 0; i < 6; i++)
     {
         if (objs[currentArea][i].isFound) continue;
 
@@ -301,9 +324,12 @@ int PlayScene::GetClearTime() const
 
 void PlayScene::Draw()
 {
+   // DrawFormatString(0, 50, GetColor(255, 255, 255),
+     //   "ImageHandle:%d", Resource::playArea[currentArea]);
+
     DrawFormatString(1700, 50,
         GetColor(255, 255, 255),
-        "残り:%d", remainingCount);
+        _T("残り:%d"), remainingCount);
 
     int sec = gameTimer / 60;
     int min = sec / 60;
@@ -312,34 +338,21 @@ void PlayScene::Draw()
     DrawFormatString(
         1700, 100,
         GetColor(255, 255, 255),
-        "TIME %02d:%02d", min, sec
+        _T("TIME %02d:%02d"), min, sec
     );
-    /*
-    DrawStringToHandle(
-        100, 50, 
-        "文字が表示されない場合がありますその時は別のエリアに移動してもう一回もどると表示されると思います。",
-  GetColor(255, 255, 255), font);
-  */
-  //  DrawStringToHandle(100, 50, "もうひとつ", GetColor(255, 255, 255), font);
 
-    switch (currentArea)
+    if(currentArea >= 0 && currentArea < 10)
     {
-    case 0:
-        DrawGraph(280, 150, Resource::playArea[currentArea], TRUE);
-        break;
-    case 1:
-        DrawGraph(280, 150, Resource::playArea[currentArea], TRUE);
-        break;
-    case 2:
-        DrawGraph(280, 150, Resource::playArea[currentArea], TRUE);
-        break;
-	case 3:
-        DrawGraph(280, 150, Resource::playArea[currentArea], TRUE);
-		break;
+        DrawExtendGraph(
+            280, 150,
+            280 + 1280,
+            150 + 720,
+            Resource::playArea[Game::stage - 1][currentArea],
+            TRUE
+        );
     }
 
     // ＞ボタン
-   // DrawString(1800, 500, ">", GetColor(255, 255, 255));
     DrawGraph(1700, 450, Resource::arrowRight, TRUE);
     DrawGraph(50, 450, Resource::arrowLeft, TRUE);
     
@@ -353,7 +366,7 @@ void PlayScene::Draw()
     GetMousePoint(&mx, &my);
 
     DrawFormatString(0, 0, GetColor(255, 255, 255),
-        "Mouse:%d %d  Area:%d", mx, my, currentArea);
+        _T("Mouse:%d %d  Area:%d"), mx, my, currentArea);
 
     if (showClick)
     {
@@ -388,17 +401,17 @@ void PlayScene::Draw()
         // ★正解オブジェクトなら文字を表示
         if (objs[currentArea][i].isAnother && !objs[currentArea][i].isFound)
         {
-            int textW = GetDrawStringWidth("もうひとつ", -1);
+            int textW = GetDrawStringWidth(_T("もうひとつ"), -1);
 
             DrawString(
                 objs[currentArea][i].x + objs[currentArea][i].width / 2 - textW / 2,
                 objs[currentArea][i].y + objs[currentArea][i].height / 2 - 8,
-                "もうひとつ",
+                _T("もうひとつ"),
                 GetColor(255, 255, 255)
             );
         }
     }
-    for (int i = 0; i < OBJ_MAX; i++)
+    for (int i = 0; i < 6; i++)
     {
         if (objs[currentArea][i].isFound)
         {
@@ -410,7 +423,7 @@ void PlayScene::Draw()
     }
 	if (areaClear[currentArea])// ★ クリアしてるエリアなら「CLEAR!」表示
     {
-        DrawString(900, 100, "CLEAR!", GetColor(255, 255, 0));
+        DrawString(900, 100, _T("CLEAR!"), GetColor(255, 255, 0));
     }
     
 }

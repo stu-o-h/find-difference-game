@@ -13,7 +13,10 @@ public:
   
     static int titleHandle;
 
-    static int playArea[10];   // š10–‡•ª‚Ì‰æ‘œ
+    static const int STAGE_MAX = 3;
+    static const int AREA_MAX = 3;
+
+    static int playArea[STAGE_MAX][AREA_MAX];   // š10–‡•ª‚Ì‰æ‘œ
 
 
     static int PlayHandle;

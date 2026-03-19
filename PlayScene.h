@@ -4,7 +4,7 @@
 #include "Scene.h"  //SceneID を使うため
 #include "Object.h" //FindObject 構造体を使うため
 
-#define OBJ_MAX 30
+#define OBJ_MAX 6
 //オブジェクト生成
 //クリック判定
 //正解管理
@@ -28,9 +28,10 @@ public:
 private:
    // static const int OBJ_MAX = 16; // 4x4
     AnotherPoint another;  // ★ 正解エリア
-    AnotherPoint objs[3][OBJ_MAX];
+    AnotherPoint objs[10][OBJ_MAX];
 
-	bool areaClear[3]; // 各エリアのクリア状態
+    bool areaClear[10] = {}; // 各エリアのクリア状態
+    int areaAnotherCount[10];
 
 	int stage;         //ステージ番号
     int totalAnotherCount;          //全問題数
@@ -64,6 +65,8 @@ private:
     int bgmVolume;
     bool bgmFadeIn;
     bool bgmFadeOut;
+
+   
 
     struct Rect { int x, y, w, h; };
     inline bool InRect(const Rect& r, int mx, int my) {

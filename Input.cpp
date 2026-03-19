@@ -5,24 +5,46 @@
 #include "DxLib.h"
 #include "Input.h"
 
-// 前フレームのマウス状態を保持
+// マウス
 static int nowMouse;
-static int prevMouse; // 現在のマウス状態（初期値は前フレームと同じ）
-// 毎フレーム更新（最後に呼ぶのが理想）
-void Input::Update() {
-    // 現在のマウス状態を保存
-	prevMouse = nowMouse; //前フレームの状態を保存
-    nowMouse = GetMouseInput();  //現在の入力を取得。
-}
-// 左クリックが押された瞬間を検出
-bool Input::IsMouseTriggered() {
+static int prevMouse;
 
-    //(now & MOUSE_INPUT_LEFT)今フレームで左クリックが押されているか？ 
-    // !(prevMouse & MOUSE_INPUT_LEFT) 前フレームでは押されていなかったか？
-    return (nowMouse & MOUSE_INPUT_LEFT) && !(prevMouse & MOUSE_INPUT_LEFT);//押された瞬間だけtrue
+// キーボード
+static char nowKey[256];
+static char prevKey[256];
+
+// 毎フレーム更新
+void Input::Update()
+{
+    // --- マウス ---
+    prevMouse = nowMouse;
+    nowMouse = GetMouseInput();
+
+    // --- キーボード ---
+    memcpy(prevKey, nowKey, 256);
+    GetHitKeyStateAll(nowKey);
 }
-// マウス座標取得
-void Input::GetMousePosition(int& x, int& y) {
+
+// 左クリックが押された瞬間
+bool Input::IsMouseTriggered()
+{
+    return (nowMouse & MOUSE_INPUT_LEFT) && !(prevMouse & MOUSE_INPUT_LEFT);
+}
+
+// マウス座標
+void Input::GetMousePosition(int& x, int& y)
+{
     GetMousePoint(&x, &y);
 }
 
+// ★キー押しっぱなし
+bool Input::IsKeyDown(int key)
+{
+    return nowKey[key];
+}
+
+// ★キー押した瞬間
+bool Input::IsKeyTriggered(int key)
+{
+    return nowKey[key] && !prevKey[key];
+}

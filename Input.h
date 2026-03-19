@@ -15,4 +15,6 @@ public:
     // マウス座標取得
     static void GetMousePosition(int& x, int& y);
 
+	static bool IsKeyDown(int key);       // ★キーが押されているか
+	static bool IsKeyTriggered(int key);   // ★キーが押された瞬間か
 };

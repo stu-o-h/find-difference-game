@@ -6,21 +6,23 @@
 #include "Resource.h"
 void TitleScene::Init()
 {
+	Game::stage = 1; // ステージ番号の初期化
+
     fade.Init(); // フェードの初期化
 	fade.StartFadeIn(); // タイトル画面が最初にフェードインするようにする
 
-    fontHandle = CreateFontToHandle("Arial", 40, 3);
-    fontHandle2 = CreateFontToHandle("Arial", 20, 3);
+    fontHandle = CreateFontToHandle(NULL, 40, 3);
+    fontHandle2 = CreateFontToHandle(NULL, 20, 3);
 
     //DrawString(0, 200, "INIT CALLED", GetColor(255, 0, 0));
 
     tutorialPage = 0;
     showTutorial = false;
 
-    if (fontHandle == -1)
-    {
-        printfDx("fontHandle FAILED\n");
-    }
+    //if (fontHandle == -1)
+    //{
+      //  printfDx(_T("fontHandle FAILED\n"));
+   // }
 }
 
 void TitleScene::Update(SceneID& scene)
@@ -29,7 +31,6 @@ void TitleScene::Update(SceneID& scene)
     //{
       //  scene = SceneID::PLAY;
     //}
-    if (!Input::IsMouseTriggered()) return;
     if (Input::IsMouseTriggered())
     {
         if (!showTutorial)
@@ -76,19 +77,19 @@ void TitleScene::Draw()
         DrawGraph(150, 150, Resource::titleHandle, TRUE);
 
         int width = GetDrawStringWidthToHandle(
-            "Click to Start",
+            _T("Click to Start"),
             strlen("Click to Start"),
             fontHandle2);
 
         DrawStringToHandle(380, 260,
-            "Find Another One",
+            _T("Find Another One"),
             GetColor(255, 255, 255),
             fontHandle);
 
         DrawStringToHandle(
             640 - width / 2,
             500,
-            "Click to Start",
+            _T("Click to Start"),
             GetColor(255, 255, 255),
             fontHandle2);
     }
