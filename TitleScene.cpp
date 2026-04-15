@@ -81,14 +81,13 @@ void TitleScene::Draw()
             strlen("Click to Start"),
             fontHandle2);
 
-        DrawStringToHandle(380, 260,
-            _T("Find Another One"),
+        DrawStringToHandle(550, 300,
+            _T("もうひとつを見つける"),
             GetColor(255, 255, 255),
             fontHandle);
 
         DrawStringToHandle(
-            640 - width / 2,
-            500,
+            700 ,700,
             _T("Click to Start"),
             GetColor(255, 255, 255),
             fontHandle2);

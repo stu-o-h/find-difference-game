@@ -66,7 +66,8 @@ private:
     bool bgmFadeIn;
     bool bgmFadeOut;
 
-   
+	bool debugDraw = false;//デバッグ用の当たり判定表示
+	int hintTimer; // ヒント表示のタイマー
 
     struct Rect { int x, y, w, h; };
     inline bool InRect(const Rect& r, int mx, int my) {

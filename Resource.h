@@ -28,6 +28,9 @@ public:
 
 	static int bgmPlay;     // BGM‚Ìƒnƒ“ƒhƒ‹
 
+    static int seCorrect;
+    static int seMiss;
+
     static int tutorialImage[3];
 
     static void Load();

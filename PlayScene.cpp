@@ -102,6 +102,8 @@ void PlayScene::Init()
 
     remainingCount = totalAnotherCount;
 
+	hintTimer = 0;
+
     CreateObjects();
 }
 
@@ -111,7 +113,7 @@ void PlayScene::Update(SceneID& scene)
 
     CheckClick();
     gameTimer++;
-
+	hintTimer++;
     bool allClear = true;
 
     for (int i = 0; i < areaCount; i++)
@@ -253,6 +255,7 @@ void PlayScene::CheckClick()
         my > rightY && my < rightY + h)
     {
         currentArea++;
+		hintTimer = 0; // エリア切り替えたらヒントタイマーリセット
         if (currentArea >= areaCount) currentArea = 0;
 
         // ★残りオブジェクトを再計算
@@ -295,6 +298,7 @@ void PlayScene::CheckClick()
 
             if (objs[currentArea][i].isAnother)
             {
+                PlaySoundMem(Resource::seCorrect, DX_PLAYTYPE_BACK);
                 objs[currentArea][i].isFound = true;
                 correctCount++;
                 FoundAnother();
@@ -307,10 +311,13 @@ void PlayScene::CheckClick()
     // ===== ミスクリック =====
     if (!hitObject)
     {
+        PlaySoundMem(Resource::seMiss, DX_PLAYTYPE_BACK);
         missX = mx;
         missY = my;
         showMiss = true;
         missTimer = 60;
+
+		hintTimer += 60; 
     }
 }
 
@@ -359,9 +366,11 @@ void PlayScene::Draw()
 
     int w, h;
     GetGraphSize(Resource::arrowLeft, &w, &h);
-
-    DrawBox(1700, 450, 1700 + w, 450 + h, GetColor(255, 0, 0), FALSE); // 右ボタン
-    DrawBox(50, 450, 50 + w, 450 + h, GetColor(0, 255, 0), FALSE);   // 左ボタン
+    if (debugDraw)
+    {
+        DrawBox(1700, 450, 1700 + w, 450 + h, GetColor(255, 0, 0), FALSE);
+        DrawBox(50, 450, 50 + w, 450 + h, GetColor(0, 255, 0), FALSE);
+    }
     int mx, my;
     GetMousePoint(&mx, &my);
 
@@ -389,14 +398,17 @@ void PlayScene::Draw()
             GetColor(0, 255, 0):  // 正解
             GetColor(255, 0, 0);    // ダミー
 
-        DrawBox(
-            objs[currentArea][i].x,
-            objs[currentArea][i].y,
-            objs[currentArea][i].x + objs[currentArea][i].width,
-            objs[currentArea][i].y + objs[currentArea][i].height,
-            color,
-            FALSE
-        );
+        if (debugDraw)
+        {
+            DrawBox(
+                objs[currentArea][i].x,
+                objs[currentArea][i].y,
+                objs[currentArea][i].x + objs[currentArea][i].width,
+                objs[currentArea][i].y + objs[currentArea][i].height,
+                color,
+                FALSE
+            );
+        }
         
         // ★正解オブジェクトなら文字を表示
         if (objs[currentArea][i].isAnother && !objs[currentArea][i].isFound)
@@ -425,6 +437,30 @@ void PlayScene::Draw()
     {
         DrawString(900, 100, _T("CLEAR!"), GetColor(255, 255, 0));
     }
-    
+    // ===== ヒント表示 =====
+    if (hintTimer > 300) // 5秒後くらいから
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            if (!objs[currentArea][i].isAnother) continue;
+            if (objs[currentArea][i].isFound) continue;
+
+            int alpha = (hintTimer - 300) * 2;
+            if (alpha > 200) alpha = 200;
+
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+
+            DrawBox(
+                objs[currentArea][i].x,
+                objs[currentArea][i].y,
+                objs[currentArea][i].x + objs[currentArea][i].width,
+                objs[currentArea][i].y + objs[currentArea][i].height,
+                GetColor(255, 255, 0),
+                TRUE
+            );
+
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        }
+    }
 }
 // DrawGraph(0, 0, Resource::PlayHandle, TRUE);

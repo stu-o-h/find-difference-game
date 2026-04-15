@@ -20,6 +20,10 @@ int Resource::arrowRight = -1;
 
 int Resource::bgmPlay = -1;
 
+int Resource::seCorrect = -1;
+
+int Resource::seMiss = -1;
+
 int Resource::tutorialImage[3];
 
 // 画像読み込み関数
@@ -44,7 +48,10 @@ void Resource::Load() {
 
     bgmPlay = LoadSoundMem(_T("Resource/maou_game_village07.mp3"));
 
-    tutorialImage[0] = LoadGraph(_T("Resource/スクリーンショット 2026-03-13 111136.png"));
-    tutorialImage[1] = LoadGraph(_T("Resource/スクリーンショット 2026-03-13 112245.png"));
-    tutorialImage[2] = LoadGraph(_T("Resource/スクリーンショット 2026-03-13 112048.png"));
+	seCorrect = LoadSoundMem(_T("Resource/maou_se_onepoint15Correct.mp3"));
+	seMiss = LoadSoundMem(_T("Resource/maou_se_onepoint14seMiss.mp3")); 
+
+    tutorialImage[0] = LoadGraph(_T("Resource/スクリーンショット 2026-03-19 132351.png"));
+   tutorialImage[1] = LoadGraph(_T("Resource/スクリーンショット 2026-03-19 133307.png"));
+    tutorialImage[2] = LoadGraph(_T("Resource/スクリーンショット 2026-03-19 133429.png"));
 }
