@@ -9,6 +9,7 @@ DxLibで制作した間違い探しゲームです。
 <img width="1919" height="1079" alt="スクリーンショット 2026-04-15 135008" src="https://github.com/user-attachments/assets/0181b856-0988-4836-adf9-d024bc53e11b" />
 
 プレイ動画
+https://youtu.be/ouxXJlVr8TI
 
 制作意図
 unityゲームジャムに投稿こうしたゲームをもとに、プログラミングやゲームエンジンを理解するためにDxlibで再実装しました。
