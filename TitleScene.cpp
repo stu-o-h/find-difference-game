@@ -4,6 +4,7 @@
 #include "DxLib.h"
 #include"Game.h"
 #include "Resource.h"
+
 void TitleScene::Init()
 {
 	Game::stage = 1; // ステージ番号の初期化

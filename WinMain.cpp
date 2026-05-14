@@ -1,3 +1,4 @@
+//メインプログラム（エントリーポイント）を定義するファイル
 #include "DxLib.h"
 #include "Game.h"
 #include "Resource.h"
@@ -12,8 +13,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // ---------------------------
 
     
-    SetGraphMode(1920, 1080, 32);     // 画面サイズ 1280x720 / 32bitカラー
+	SetGraphMode(1920, 1080, 32);     // 画面の解像度を1920x1080、色深度32ビットに設定
     ChangeWindowMode(TRUE);          // ウィンドウモードで起動（FALSEならフルスクリーン）
+
     // ---------------------------
     // DxLib初期化
     // ---------------------------
@@ -21,6 +23,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     if (DxLib_Init() == -1) {        // 初期化失敗なら終了
         return -1;
     }
+    
+    // 描画先を「裏画面」に設定（ダブルバッファリング）
+    // これにより、描画中のチラつきを抑え、完成した画面だけをパッと表示できる
+    SetDrawScreen(DX_SCREEN_BACK);
 
     // ---------------------------
     // リソース読み込み

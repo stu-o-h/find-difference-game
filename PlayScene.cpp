@@ -7,11 +7,13 @@
 #include "Game.h"
 #include "ResultScene.h"
 
+//データ取得用関数
 int PlayScene::GetCorrectCount() const
 {
     return correctCount;
 }
 
+//データ取得用関数
 int PlayScene::GetClickCount() const
 {
     return clickCount;
@@ -20,19 +22,19 @@ int PlayScene::GetClickCount() const
 // ★オブジェクト同士が近すぎないか判定する関数
 bool IsTooClose(AnotherPoint a, AnotherPoint b)
 {
+    //中心座標を計算
     int ax = a.x + a.width / 2;
     int ay = a.y + a.height / 2;
 
     int bx = b.x + b.width / 2;
     int by = b.y + b.height / 2;
 
+	//２点間の距離の２乗を計算
     int dx = ax - bx;
     int dy = ay - by;
-
     int distance2 = dx * dx + dy * dy;
 
     int minDist = 150;  // この距離以上離す
-
     return distance2 < minDist * minDist;
 }
 
@@ -47,6 +49,7 @@ bool IsOverlap(AnotherPoint a, AnotherPoint b)
     return true; // 重なっている
 }
 
+// --- 初期化処理 ---
 void PlayScene::Init()
 {
    // printfDx("PlayScene Init\n");
@@ -54,16 +57,16 @@ void PlayScene::Init()
 
     correctCount = 0;
     clickCount = 0;
+    currentArea = 0; // 最初はエリア0から
+    areaCount = 3;   //全エリア３
+	gameTimer = 0;   //タイマーリセット
+    hintTimer = 0;   //ヒント用タイマー
 
     another.x = 600;
     another.y = 350;
     another.width = 120;
     another.height = 40;
     another.isFound = false;
-
-	currentArea = 0;        // 最初はエリア0から
-
-    areaCount = 3;
 
     for (int i = 0; i < areaCount; i++)
     {
@@ -75,14 +78,13 @@ void PlayScene::Init()
     remainingCount = totalAnotherCount;
 	showClick = false;
 
-    font = CreateFontToHandle(NULL, 30, 3);// フォントサイズ30、太さ3のフォントを作成
-
-	gameTimer = 0;
+    font = CreateFontToHandle(NULL, 30, 3);// フォントサイズ30、太さ3のフォントを作成	
 
 	showMiss = false;
 
 	missTimer = 0;
 
+	// BGMの開始とフェードインの設定
     bgmVolume = 0;
     bgmFadeIn = true;
     bgmFadeOut = false;
@@ -90,32 +92,29 @@ void PlayScene::Init()
     PlaySoundMem(Resource::bgmPlay, DX_PLAYTYPE_LOOP);
     ChangeVolumeSoundMem(0, Resource::bgmPlay);
 
-    
-
-    // ステージごとの問題数
-    if (Game::stage == 1)
-        totalAnotherCount = 3;
-    else if (Game::stage == 2)
-        totalAnotherCount = 4;
-    else
-        totalAnotherCount = 5;
+	// ステージが進むごとに正解数を増やす
+    if (Game::stage == 1)       totalAnotherCount = 3;
+    else if (Game::stage == 2)  totalAnotherCount = 4;
+    else                        totalAnotherCount = 5;
 
     remainingCount = totalAnotherCount;
 
-	hintTimer = 0;
+	
 
-    CreateObjects();
+	CreateObjects();// オブジェクトのランダム配置
 }
 
+// --- 更新処理 ---
 void PlayScene::Update(SceneID& scene)
 {
     //printfDx("FadeOut %d\n", bgmFadeOut);
 
-    CheckClick();
-    gameTimer++;
-	hintTimer++;
-    bool allClear = true;
+	CheckClick();   // クリックの処理
+    gameTimer++;    //全体のプレイ時間加算
+	hintTimer++;    //ヒント用タイマー加算
 
+	//全体のクリア判定
+    bool allClear = true;
     for (int i = 0; i < areaCount; i++)
     {
         if (!areaClear[i])
@@ -124,13 +123,16 @@ void PlayScene::Update(SceneID& scene)
             break;
         }
     }
+
 	// 全エリアクリアしたらリザルトへ
     if (allClear)
     {
+		//クリアならBGMフェードアウト開始
         StopSoundMem(Resource::bgmPlay);
         bgmFadeOut = true;
     }
 
+	//ミス表示のタイマー管理
     if (missTimer > 0)
     {
         missTimer--;
@@ -169,9 +171,10 @@ void PlayScene::Update(SceneID& scene)
     }
 }
 
+// --- オブジェクトの重なりを避けて配置 ---
 void PlayScene::CreateObjects()
 {
-    int objCount = 6;
+	int objCount = 6; //１エリアあたりのオブジェクト数
 
     for (int area = 0; area < areaCount; area++)
     {
@@ -185,10 +188,10 @@ void PlayScene::CreateObjects()
             do
             {
                 overlap = false;
-
-                objs[area][i].x = GetRand(1000) + 300;
+				objs[area][i].x = GetRand(1000) + 300; //配置範囲を300～1300に設定
                 objs[area][i].y = GetRand(500) + 180;
 
+				// すでに配置したオブジェクトと近すぎないかチェック
                 for (int j = 0; j < i; j++)
                 {
                     if (IsTooClose(objs[area][i], objs[area][j]))
@@ -198,7 +201,7 @@ void PlayScene::CreateObjects()
                     }
                 }
 
-            } while (overlap);
+			} while (overlap);//重なっているなら再度位置を決める
 
             objs[area][i].isAnother = false;
             objs[area][i].isFound = false;
@@ -233,6 +236,7 @@ void PlayScene::FoundAnother()
     }
 }
 
+// ---クリック判定メイン ---
 void PlayScene::CheckClick()
 {
     if (!Input::IsMouseTriggered()) return;
@@ -285,8 +289,8 @@ void PlayScene::CheckClick()
         return;
     }
 
+	// ---オブジェクトクリックの判定---
     bool hitObject = false;
-
     for (int i = 0; i < 6; i++)
     {
         if (objs[currentArea][i].isFound) continue;

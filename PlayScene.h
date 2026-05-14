@@ -1,4 +1,4 @@
-//PlayScene設計（ゲームの心臓）
+//プレイシーンのヘッダーファイル
 // 探すパート
 #pragma once
 #include "Scene.h"  //SceneID を使うため

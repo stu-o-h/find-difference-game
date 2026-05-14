@@ -1,4 +1,5 @@
-﻿#include "Game.h"
+﻿//メイン信仰管理
+#include "Game.h"
 #include "DXLib.h"
 #include "Scene.h"
 #include "TitleScene.h"
@@ -7,23 +8,24 @@
 #include "FadeManager.h"
 #include "Input.h"
 
+// --- 静的メンバ変数の定義 ---
 static TitleScene title;//タイトル
 static PlayScene  play;//プレイシーン
 static ResultScene result;//リザルト
 static FadeManager fade;//フェード
 
-int Game::stage = 1; // ステージ番号の初期化
-//フェードを初期化
+int Game::stage = 1; // ゲーム全体のステージ番号　
+// --- 初期化処理 ---
 void Game::Init() {
     fade.Init();                  //フェードを初期化
     currentScene = SceneID::TITLE;//最初のシーンをタイトルに設定
 	nextScene = currentScene; // シーン遷移のための変数も同じにしておく
 	isChangingScene = false;        //最初はシーン遷移していない状態
 
-    title.Init();
+	title.Init();           //タイトルシーンの初期化
 }
 
-//更新処理
+// --- 更新処理 ---
 void Game::Update() {
 
     //前フレームのシーンを記録する変数
@@ -31,19 +33,20 @@ void Game::Update() {
 
     fade.Update();//毎フレームフェード更新
 
-    // フェード完了後にシーン切替
-    if (!fade.IsFading() && isChangingScene)
+	//シーン切り替えの実行
+	if (!fade.IsFading() && isChangingScene)//フェードが終わっていて、シーン遷移中なら
     {
-        currentScene = nextScene;
-        fade.StartFadeIn();
-        isChangingScene = false;
+		currentScene = nextScene;           //シーンを切り替える
+		fade.StartFadeIn();                 //新しいシーンにフェードインする
+		isChangingScene = false;            //シーン遷移完了
     }
 
-    //現在のシーンごとに処理を分岐
+    // --- 現在のシーンに応じた個別更新 ---
     switch (currentScene) {
 
     case SceneID::TITLE:
     {
+        //シーンが切り替わった直後の初回のみ初期化
         if (prevScene != SceneID::TITLE)
         {
             title.Init();
@@ -51,13 +54,14 @@ void Game::Update() {
 
         SceneID requestedScene = currentScene;
 
-        title.Update(requestedScene);
+        title.Update(requestedScene);//タイトル内の処理
 
+		//タイトル側からシーンを変えたいと要求があったら
         if (requestedScene != currentScene && !isChangingScene)
         {
-            nextScene = requestedScene;
-            fade.StartFadeOut();
-            isChangingScene = true;
+			nextScene = requestedScene; //次の行先を保存
+			fade.StartFadeOut();        //フェードアウト開始
+			isChangingScene = true;     //シーン遷移中フラグを立てる
         }
     }
     break;
@@ -80,8 +84,10 @@ void Game::Update() {
         }
     }
     break;
+
     case SceneID::RESULT:
-    {
+    {   
+        //　リザルト開始時には、プレイ中のスコアやタイムを引き渡して初期化
         if (prevScene != SceneID::RESULT)
         {
             result.Init(
@@ -105,12 +111,13 @@ void Game::Update() {
     break;
     }
     
-    prevScene = currentScene;//最後に現在シーンを保存
-    Input::Update();
+	prevScene = currentScene;//今回のシーンを前回のシートとして保存
+	Input::Update();        //キー入力の更新
 }
 
-//描画も同様に switch 分岐。
+// --- 描画処理 ---
 void Game::Draw() {
+	//  --- 現在のシーンに応じた個別描画 ---
     switch (currentScene) {
     case SceneID::TITLE:
         title.Draw();
